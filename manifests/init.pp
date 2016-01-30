@@ -28,17 +28,23 @@
 #   A flag to allow using the 'register-unsafely-without-email' flag.
 #
 class letsencrypt (
-  Optional[String]   $email               = undef,
-  String             $path                = $letsencrypt::params::path,
-  String             $repo                = $letsencrypt::params::repo,
-  String             $version             = $letsencrypt::params::version,
-  String             $config_file         = $letsencrypt::params::config_file,
-  Hash[String, Any]  $config              = $letsencrypt::params::config,
-  Boolean            $manage_config       = $letsencrypt::params::manage_config,
-  Boolean            $manage_dependencies = $letsencrypt::params::manage_dependencies,
-  Boolean            $agree_tos           = $letsencrypt::params::agree_tos,
-  Boolean            $unsafe_registration = $letsencrypt::params::unsafe_registration,
+  $email               = undef,
+  $path                = $letsencrypt::params::path,
+  $repo                = $letsencrypt::params::repo,
+  $version             = $letsencrypt::params::version,
+  $config_file         = $letsencrypt::params::config_file,
+  $config              = $letsencrypt::params::config,
+  $manage_config       = $letsencrypt::params::manage_config,
+  $manage_dependencies = $letsencrypt::params::manage_dependencies,
+  $agree_tos           = $letsencrypt::params::agree_tos,
+  $unsafe_registration = $letsencrypt::params::unsafe_registration,
 ) inherits letsencrypt::params {
+  validate_string($path, $repo, $version, $config_file)
+  if $email {
+    validate_string($email)
+  }
+  validate_bool($manage_config, $manage_dependencies, $agree_tos, $unsafe_registration)
+  validate_hash($config)
 
   if $manage_dependencies {
     $dependencies = ['python', 'git']
