@@ -20,8 +20,13 @@
 # [*manage_config*]
 #   A feature flag to toggle the management of the letsencrypt configuration
 #   file.
+# [*manage_install*]
+#   A feature flag to toggle the management of the letsencrypt client
+#   installation.
 # [*manage_dependencies*]
 #   A feature flag to toggle the management of the letsencrypt dependencies.
+# [*install_method*]
+#   Method to install the letsencrypt client, either package or vcs.
 # [*agree_tos*]
 #   A flag to agree to the Let's Encrypt Terms of Service.
 # [*unsafe_registration*]
@@ -35,7 +40,9 @@ class letsencrypt (
   $config_file         = $letsencrypt::params::config_file,
   $config              = $letsencrypt::params::config,
   $manage_config       = $letsencrypt::params::manage_config,
+  $manage_install      = $letsencrypt::params::manage_install,
   $manage_dependencies = $letsencrypt::params::manage_dependencies,
+  $install_method      = $letsencrypt::install_method,
   $agree_tos           = $letsencrypt::params::agree_tos,
   $unsafe_registration = $letsencrypt::params::unsafe_registration,
 ) inherits letsencrypt::params {
@@ -43,13 +50,18 @@ class letsencrypt (
   if $email {
     validate_string($email)
   }
-  validate_bool($manage_config, $manage_dependencies, $agree_tos, $unsafe_registration)
+  validate_bool($manage_config, $manage_install, $manage_dependencies, $agree_tos, $unsafe_registration)
   validate_hash($config)
+  validate_re($install_method, ['^package$', '^vcs$'])
 
-  if $manage_dependencies {
-    $dependencies = ['python', 'git']
-    ensure_packages($dependencies)
-    Package[$dependencies] -> Vcsrepo[$path]
+  if $manage_install {
+    contain letsencrypt::install
+    Class['letsencrypt::install'] ~> Exec['initialize letsencrypt']
+  }
+
+  $command = $install_method ? {
+    'package' => 'letsencrypt',
+    'vcs'     => "${path}/letsencrypt-auto",
   }
 
   if $manage_config {
@@ -57,16 +69,9 @@ class letsencrypt (
     Class['letsencrypt::config'] -> Exec['initialize letsencrypt']
   }
 
-  vcsrepo { $path:
-    ensure   => present,
-    provider => git,
-    source   => $repo,
-    revision => $version,
-    notify   => Exec['initialize letsencrypt'],
-  }
-
   exec { 'initialize letsencrypt':
-    command     => "${path}/letsencrypt-auto -h",
+    command     => "${command} -h",
+    path        => $::path,
     refreshonly => true,
   }
 }
