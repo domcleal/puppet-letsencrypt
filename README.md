@@ -13,6 +13,15 @@ This branch is a version of [danzilio's original](https://github.com/danzilio/pu
 backported to run on Puppet 3.  I recommend using Puppet 4 with his version if
 at all possible.
 
+## Dependencies
+
+On EL (Red Hat, CentOS etc.) systems, the EPEL repository needs to be enabled
+for the Let's Encrypt client package.
+
+The module can integrate with [stahnma/epel](https://forge.puppetlabs.com/stahnma/epel)
+to set up the repo by setting the `configure_epel` parameter to `true` and
+installing the module.
+
 ## Usage
 
 To install the Let's Encrypt client with the default configuration settings you
@@ -21,6 +30,15 @@ must provide your email address to register with the Let's Encrypt servers:
 ```puppet
 class { ::letsencrypt:
   email => 'foo@example.com',
+}
+```
+
+If using EL7 without EPEL-preconfigured, add `configure_epel`:
+
+```puppet
+class { ::letsencrypt:
+  configure_epel => true,
+  email          => 'foo@example.com',
 }
 ```
 

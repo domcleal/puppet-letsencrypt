@@ -15,6 +15,7 @@ describe 'letsencrypt' do
 
           it 'should contain the correct resources' do
             is_expected.to contain_class('letsencrypt::install').with({
+              configure_epel: false,
               manage_install: true,
               manage_dependencies: true,
               repo: 'git://github.com/letsencrypt/letsencrypt.git',
@@ -102,10 +103,16 @@ describe 'letsencrypt' do
     end
   end
 
-  context 'on unsupported operating systems' do
-    let(:facts) { { osfamily: 'Darwin' } }
-    it 'should fail' do
-      is_expected.to raise_error Puppet::Error, /The letsencrypt module does not support Darwin/
+  context 'on unknown operating systems' do
+    let(:facts) { { osfamily: 'Darwin', path: '/usr/bin' } }
+    let(:params) { { email: 'foo@example.com' } }
+
+    describe 'with defaults' do
+      it { is_expected.to compile }
+
+      it 'should contain the correct resources' do
+        is_expected.to contain_class('letsencrypt::install').with(install_method: 'vcs')
+      end
     end
   end
 
