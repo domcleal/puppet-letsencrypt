@@ -22,8 +22,8 @@ describe 'letsencrypt' do
               version: 'v0.1.0'
             }).that_notifies('Exec[initialize letsencrypt]')
 
-            is_expected.to contain_ini_setting('[] email').with_path('/etc/letsencrypt/cli.ini').with_value('foo@example.com')
-            is_expected.to contain_ini_setting('[] server').with_path('/etc/letsencrypt/cli.ini').with_value('https://acme-v01.api.letsencrypt.org/directory')
+            is_expected.to contain_ini_setting('/etc/letsencrypt/cli.ini email foo@example.com')
+            is_expected.to contain_ini_setting('/etc/letsencrypt/cli.ini server https://acme-v01.api.letsencrypt.org/directory')
             is_expected.to contain_exec('initialize letsencrypt')
             is_expected.to contain_class('letsencrypt::config').that_comes_before('Exec[initialize letsencrypt]')
           end
@@ -47,12 +47,12 @@ describe 'letsencrypt' do
 
         describe 'with custom config file' do
           let(:additional_params) { { config_file: '/etc/letsencrypt/custom_config.ini' } }
-          it { is_expected.to contain_ini_setting('[] server').with_path('/etc/letsencrypt/custom_config.ini').with_value('https://acme-v01.api.letsencrypt.org/directory') }
+          it { is_expected.to contain_ini_setting('/etc/letsencrypt/custom_config.ini server https://acme-v01.api.letsencrypt.org/directory') }
         end
 
         describe 'with custom config' do
           let(:additional_params) { { config: { 'foo' => 'bar' } } }
-          it { is_expected.to contain_ini_setting('[] foo').with_path('/etc/letsencrypt/cli.ini').with_value('bar') }
+          it { is_expected.to contain_ini_setting('/etc/letsencrypt/cli.ini foo bar') }
         end
 
         describe 'with manage_config set to false' do
@@ -86,7 +86,7 @@ describe 'letsencrypt' do
       context 'when specifying an email in $config' do
         let(:params) { { config: { 'email' => 'foo@example.com' } } }
         it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_ini_setting('[] email').with_path('/etc/letsencrypt/cli.ini').with_value('foo@example.com') }
+        it { is_expected.to contain_ini_setting('/etc/letsencrypt/cli.ini email foo@example.com') }
       end
 
       context 'when not specifying the email parameter or an email key in $config' do
@@ -96,7 +96,7 @@ describe 'letsencrypt' do
 
         context 'with unsafe_registration set to true' do
           let(:params) {{ unsafe_registration: true }}
-          it { is_expected.not_to contain_ini_setting('[] email') }
+          it { is_expected.not_to contain_ini_setting('/etc/letsencrypt/cli.ini email foo@example.com') }
           it { is_expected.to contain_ini_setting('/etc/letsencrypt/cli.ini register-unsafely-without-email true') }
         end
       end
