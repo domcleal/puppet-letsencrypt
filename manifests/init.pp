@@ -46,7 +46,7 @@ class letsencrypt (
   $manage_install      = $letsencrypt::params::manage_install,
   $manage_dependencies = $letsencrypt::params::manage_dependencies,
   $configure_epel      = $letsencrypt::params::configure_epel,
-  $install_method      = $letsencrypt::install_method,
+  $install_method      = $letsencrypt::params::install_method,
   $agree_tos           = $letsencrypt::params::agree_tos,
   $unsafe_registration = $letsencrypt::params::unsafe_registration,
 ) inherits letsencrypt::params {
